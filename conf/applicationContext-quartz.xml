@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- 日志：配置石英任务 -->
+	<bean id="jobDetailBean" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<!-- 特殊的引入方式 -->
+		<property name="jobClass"
+			value="com.atguigu.crm.orm.MyQuartzJobBean" />
+
+		<!-- 以特殊的方式为石英任务bean注入组件 -->
+		<!-- <property name="jobDataMap"> -->
+		<!-- <map> -->
+		<!-- <entry key="logService" value-ref="logServiceImpl" /> -->
+		<!-- </map> -->
+		<!-- </property> -->
+	</bean>
+
+	<!-- 日志：配置石英任务触发器 -->
+	<bean id="cronTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="jobDetailBean" />
+		<property name="cronExpression" value="* * * * * ?" />
+	</bean>
+
+	<!-- 日志：配置石英任务工厂bean -->
+	<bean id="schedulerFactoryBean"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="cronTriggerBean" />
+			</list>
+		</property>
+	</bean>
+</beans>

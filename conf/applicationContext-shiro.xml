@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+
+    <!-- =========================================================
+         Shiro Core Components - Not Spring Specific
+         ========================================================= -->
+    <!-- Let's use some enterprise caching support for better performance.  You can replace this with any enterprise
+         caching framework implementation that you like (Terracotta+Ehcache, Coherence, GigaSpaces, etc -->
+    <!--  
+    	配置 Shiro 的缓存管理器.
+    	1. 加入 ehcache 的 jar 包
+    	2. 加入 ehcache 的配置文件
+    	3. ehcache 的配置文件配置为 cacheManagerConfigFile 属性. 
+    -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <!-- Set a net.sf.ehcache.CacheManager instance here if you already have one.  If not, a new one
+             will be creaed with a default config:
+             <property name="cacheManager" ref="ehCacheManager"/> -->
+        <!-- If you don't have a pre-built net.sf.ehcache.CacheManager instance to inject, but you want
+             a specific Ehcache configuration to be used, specify that here.  If you don't, a default
+             will be used.: -->
+        <property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"/> 
+    </bean>   
+    
+    <!--  
+    	配置 Realm 实例
+    	1. 创建继承 AuthorizingRealm 类的 Realm.
+    	2. 把该 Reaml 加入到 IOC 容器中
+    -->
+<!--     <bean id="crmRealm" class="com.atguigu.crm.shiro.CrmRealm"> -->
+<!--     	<property name="userService" ref="userService"></property> -->
+<!--     	<property name="credentialsMatcher"> -->
+<!--     		<bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher"> -->
+<!--     			加密算法 -->
+<!--     			<property name="hashAlgorithmName" value="MD5"></property> -->
+<!--     			加密次数 -->
+<!--     			<property name="hashIterations" value="1024"></property> -->
+<!--     		</bean> -->
+<!--     	</property>	 -->
+<!--     </bean> -->
+         
+    <!-- Shiro's main business-tier object for web-enabled applications
+         (use DefaultSecurityManager instead when there is no web environment)-->
+    <!-- 
+    	配置 SecurityManager 实例 
+    	1. 配置两个属性: cacheManager 和 realm
+    -->     
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="realm" ref="crmRealm"/>
+    </bean>
+
+    <!-- =========================================================
+         Shiro Spring-specific integration
+         ========================================================= -->
+    <!-- Post processor that automatically invokes init() and destroy() methods
+         for Spring-configured Shiro objects so you don't have to
+         1) specify an init-method and destroy-method attributes for every bean
+            definition and
+         2) even know which Shiro objects require these methods to be
+            called. -->
+    <!-- 配置可以自动调用 shiro 生命周期方法的 Post Processor -->        
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!-- Enable Shiro Annotations for Spring-configured beans.  Only run after
+         the lifecycleBeanProcessor has run: -->
+    <!--  
+    	在 Spring 中启用 shiro 的权限注解.
+    	但必须在配置 org.apache.shiro.spring.LifecycleBeanPostProcessor 后才能起作用. 
+    -->     
+    <!--  不能两层注解
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+    -->
+
+    <!-- Define the Shiro Filter here (as a FactoryBean) instead of directly in web.xml -
+         web.xml uses the DelegatingFilterProxy to access this bean.  This allows us
+         to wire things with more control as well utilize nice Spring things such as
+         PropertiesPlaceholderConfigurer and abstract beans or anything else we might need: -->
+    <!--  
+    	配置 ShiroFilter.
+    	1. 注意: id 必须和 web.xml 文件中配置的 shiroFilter 的 name 一致. 
+    -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="/index"/>
+        <property name="unauthorizedUrl" value="/unauthorized"/>
+        
+        <!-- 
+        	配置资源被拦截的规则 
+        	1. anon 表示可以被匿名访问. 即没有登录也可以访问.
+        	2. authc 表示需要认证后才可以被访问. 
+        	3. logout 表示登出. 
+        -->
+        <property name="filterChainDefinitions">
+            <value>
+				/index = anon
+                /static/** = anon
+                /user/login = anon
+                /user/logout = logout
+                
+				/chance/** = roles[chance]
+				/plan/** = roles[plan]
+				/customer/** = roles[customer]
+				/drain/** = roles[drain]
+				/service/** = roles[service]
+				/report/** = roles[report]
+				/dict/** = roles[dict]
+				/product/** = roles[product]
+				# /contact/** = roles[contact]
+				/storage/** = roles[storage]
+				/user/** = roles[user]
+                /role/** = roles[role]
+                
+                # everything else requires authentication:
+                /** = authc
+            </value>
+        </property>
+<!--         <property name="filterChainDefinitionMap" ref="filterChainDefinitionMap"/> -->
+    </bean>
+
+<!-- 	<bean id="filterChainDefinitionMap" factory-bean="filterChainDefinitionMapBuilder" factory-method="buildFilterChainDefinitionMap"/> -->
+
+<!-- 	<bean id="filterChainDefinitionMapBuilder" class="com.atguigu.crm.shiro.FilterChainDefinitionMapBuilder"/> -->
+
+
+</beans>

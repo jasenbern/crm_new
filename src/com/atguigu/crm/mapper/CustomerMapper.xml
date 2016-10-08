@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.CustomerMapper">
+
+	<update id="confirmDrain">
+		UPDATE customers
+		SET state = '流失'
+		WHERE id = #{id}
+	</update>
+
+	<select id="getAll" resultType="com.atguigu.crm.entity.Customer">
+		SELECT id, name
+		FROM customers
+	</select>
+
+	<update id="delete">
+		UPDATE customers
+		SET state = '删除'
+		WHERE id = #{id}
+	</update>
+
+	<select id="getSimple" resultType="com.atguigu.crm.entity.Customer">
+		SELECT id, no, name
+		FROM customers
+		WHERE id = #{id}
+	</select>
+
+	<update id="update">
+		UPDATE customers
+		SET no=#{no}, name=#{name}, region=#{region}, manager_id=#{manager.id}, customer_level=#{level}, 
+			state=#{state}, satify=#{satify}, credit=#{credit}, address=#{address}, zip=#{zip}, tel=#{tel}, 
+			fax=#{fax}, websit=#{websit}, licence_no=#{licenceNo}, chief=#{chief}, bankroll=#{bankroll}, 
+			turnover=#{turnover}, bank=#{bank}, bank_account=#{bankAccount}, local_tax_no=#{localTaxNo}, 
+			national_tax_no=#{nationalTaxNo}
+		WHERE id = #{id}
+	</update>
+
+	<resultMap type="com.atguigu.crm.entity.Customer" id="customerMap">
+		<id column="id" property="id"/>
+		<result column="no" property="no"/>
+		<result column="name" property="name"/>
+		<result column="region" property="region"/>
+		<result column="customer_level" property="level"/>
+		<result column="state" property="state"/>
+		<result column="satify" property="satify"/>
+		<result column="credit" property="credit"/>
+		<result column="address" property="address"/>
+		<result column="zip" property="zip"/>
+		<result column="tel" property="tel"/>
+		<result column="fax" property="fax"/>
+		<result column="websit" property="websit"/>
+		<result column="licence_no" property="licenceNo"/>
+		<result column="chief" property="chief"/>
+		<result column="bankroll" property="bankroll"/>
+		<result column="turnover" property="turnover"/>
+		<result column="bank" property="bank"/>
+		<result column="bank_account" property="bankAccount"/>
+		<result column="local_tax_no" property="localTaxNo"/>
+		<result column="national_tax_no" property="nationalTaxNo"/>
+		<collection property="contacts" ofType="com.atguigu.crm.entity.Contact">
+			<id column="con_id" property="id"/>
+			<result column="con_name" property="name"/>
+		</collection>
+	</resultMap>
+
+	<select id="getDetails" resultMap="customerMap">
+		SELECT cus.id, cus.no, cus.name, cus.region, con.id AS "con_id", con.name AS "con_name", cus.customer_level, cus.state, 
+				cus.satify, cus.credit, cus.address, cus.zip, cus.tel, cus.fax, cus.websit, cus.licence_no, cus.chief, 
+				cus.bankroll, cus.turnover, cus.bank, cus.bank_account, cus.local_tax_no, cus.national_tax_no
+		FROM customers cus
+		LEFT JOIN contacts con
+		ON con.customer_id = cus.id
+		WHERE cus.id = #{id}
+	</select>
+
+	<insert id="save" >
+		<selectKey order="BEFORE" resultType="long" keyProperty="id">
+			SELECT CRM_SEQ.nextval FROM dual
+		</selectKey>
+		INSERT INTO customers(id, name, no, state)
+		VALUES(#{id}, #{name}, #{no}, #{state})
+	</insert>
+	
+	<select id="getContent" resultType="com.atguigu.crm.entity.Customer">
+		SELECT *
+		FROM(
+			SELECT rownum rn, cus.id, cus.no, cus.name, cus.region, con.name AS "manager.name", cus.customer_level AS "level", cus.state
+			FROM customers cus
+			LEFT OUTER JOIN contacts con
+			ON con.id = cus.manager_id
+			<include refid="queryCondition"/>
+		)
+		<![CDATA[
+			WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+	
+	<select id="getTotalElements" resultType="long">
+		SELECT count(cus.id)
+		FROM customers cus
+		LEFT OUTER JOIN contacts con
+		ON con.id = cus.manager_id
+		<include refid="queryCondition"/>
+	</select>
+	
+	<sql id="queryCondition">
+		<where>
+			<if test="name != null">
+				cus.name LIKE #{name}
+			</if>
+			<if test="region != null">
+				AND cus.region = #{region}
+			</if>
+			<if test="managerName != null">
+				AND con.name LIKE #{managerName}
+			</if>
+			<if test="level != null">
+				AND cus.customer_level = #{level}
+			</if>
+			<if test="state != null">
+				AND cus.state = #{state}
+			</if>
+		</where>
+	</sql>
+	
+</mapper>

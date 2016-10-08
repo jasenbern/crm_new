@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.ReportMapper">
+
+	<select id="getConsistContent" resultType="java.util.Map">
+		SELECT *
+		FROM(
+			SELECT t.*, rownum rn
+			FROM(
+				SELECT customer_level AS "level", count(*) AS "num"
+				FROM customers
+				WHERE ${type} IS NOT NULL
+				GROUP BY customer_level
+				ORDER BY customer_level
+			) t
+		)
+		<![CDATA[
+		WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+
+	<select id="getConsistTotalElements" resultType="long">
+		SELECT count(count(*))
+		FROM customers
+		WHERE customer_level IS NOT NULL
+		GROUP BY customer_level
+	</select>
+	
+	<sql id="serviceCondition">
+		<where>
+			<if test="minOrderDate != null">
+				o.order_date >= #{minOrderDate}
+			</if>
+			<if test="maxOrderDate != null">
+				<![CDATA[
+				AND o.order_date <= #{maxOrderDate}
+				]]>
+			</if>
+		</where>
+	</sql>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getConsistContent" resultType="java.util.Map">
+		SELECT *
+		FROM(
+			SELECT t.*, rownum rn
+			FROM(
+				SELECT ${type} AS "type", count(*) AS "num"
+				FROM customers
+				WHERE ${type} IS NOT NULL
+				GROUP BY ${type}
+				ORDER BY ${type}
+			) t
+		)
+		<![CDATA[
+		WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+
+	<select id="getConsistTotalElements" resultType="long">
+		SELECT count(count(*))
+		FROM customers
+		WHERE ${type} IS NOT NULL
+		GROUP BY ${type}
+	</select>
+
+	<select id="getContributeContent" resultType="java.util.Map">
+		SELECT *
+		FROM(
+			SELECT rownum rn, t.*
+			FROM(
+				SELECT c.name AS "custName", sum(oi.item_count * p.price) AS "totalMoney"
+				FROM customers c
+				INNER JOIN orders o
+				ON o.customer_id = c.id
+				INNER JOIN order_items oi
+				ON oi.order_id = o.id
+				INNER JOIN products p
+				ON oi.product_id = p.id
+				<include refid="contributeCondition" />
+				GROUP BY c.name
+			) t
+		)
+		<![CDATA[
+		WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+
+	<select id="getContributeTotalElements" resultType="long">
+		SELECT count(DISTINCT c.id)
+		FROM customers c
+		INNER JOIN orders o
+		ON
+		o.customer_id = c.id
+		<include refid="contributeCondition" />
+	</select>
+
+	<sql id="contributeCondition">
+		<where>
+			<if test="custName != null">
+				c.name LIKE #{custName}
+			</if>
+			<if test="minOrderDate != null">
+				AND o.order_date >= #{minOrderDate}
+			</if>
+			<if test="maxOrderDate != null">
+				<![CDATA[
+				AND o.order_date <= #{maxOrderDate}
+				]]>
+			</if>
+		</where>
+	</sql>
+</mapper>

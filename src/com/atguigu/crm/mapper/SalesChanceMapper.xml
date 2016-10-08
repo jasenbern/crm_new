@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.SalesChanceMapper">
+
+	<update id="stop">
+		UPDATE sales_chances
+		SET status = 4
+		WHERE id = #{id}
+	</update>
+	
+	<update id="finish">
+		UPDATE sales_chances
+		SET status = 3
+		WHERE id = #{id}
+	</update>
+	
+	<update id="dispatch">
+		UPDATE sales_chances
+		SET status = 2, designee_id = #{designee.id}, designee_date = #{designeeDate}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getChanceForDispatch" resultType="com.atguigu.crm.entity.SalesChance">
+		SELECT c.id, c.cust_name, c.title, c.source, c.rate, c.contact, c.contact_tel, c.description, c.create_date, 
+				uc.id AS "createBy.id", uc.name AS "createBy.name", ud.id AS "designee.id", ud.name AS "designee.name"
+		FROM sales_chances c
+		LEFT OUTER JOIN users uc
+		ON c.created_user_id = uc.id
+		LEFT OUTER JOIN users ud
+		ON c.designee_id = ud.id
+		WHERE c.id = #{id}
+	</select>
+
+	<update id="update">
+		UPDATE sales_chances
+		SET cust_name = #{custName}, title = #{title}, source = #{source}, rate = #{rate}, contact = #{contact}, contact_tel = #{contactTel}, description = #{description}
+		WHERE id = #{id}
+	</update>
+
+	<select id="get" resultType="com.atguigu.crm.entity.SalesChance">
+		SELECT id, cust_name, title, source, rate, contact, contact_tel, description, create_date
+		FROM sales_chances
+		WHERE id = #{id}
+	</select>
+
+	<insert id="save">
+		INSERT INTO sales_chances(id, cust_name, title, source, rate, contact, contact_tel, description, create_date, created_user_id, status)
+		VALUES(crm_seq.nextval, #{custName}, #{title}, #{source}, #{rate}, #{contact}, #{contactTel}, #{description}, #{createDate}, #{createBy.id}, 1)
+	</insert>
+
+	<delete id="delete">
+		DELETE FROM sales_chances
+		WHERE id = #{id}
+	</delete>
+
+	<select id="getContent" resultType="com.atguigu.crm.entity.SalesChance">
+		SELECT *
+		FROM(
+			SELECT rownum rn, id, cust_name, title, contact, contact_tel, create_date
+			FROM sales_chances
+			<include refid="queryCondition"/>
+		)
+		<![CDATA[
+			WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+	
+	<select id="getTotalElements" resultType="long">
+		SELECT count(id)
+		FROM sales_chances
+		<include refid="queryCondition"/>
+	</select>
+	
+	<sql id="queryCondition">
+		WHERE status = 1 AND created_user_id = #{createBy.id}
+		<if test="custName != null">
+			AND cust_name LIKE #{custName}
+		</if>
+		<if test="title != null">
+			AND title LIKE #{title}
+		</if>
+		<if test="contact != null">
+			AND contact LIKE #{contact}
+		</if>
+		<if test="minCreateDate != null">
+			AND create_date >= #{minCreateDate}
+		</if>
+		<if test="maxCreateDate != null">
+		<![CDATA[
+			AND create_date <= #{maxCreateDate}
+		]]>
+		</if>
+	</sql>
+	
+</mapper>

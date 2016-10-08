@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.StorageMapper">
+
+	<update id="update">
+		UPDATE storages
+		SET stock_count=#{stockCount}
+		WHERE id = #{id}
+	</update>
+
+	<select id="get" resultType="com.atguigu.crm.entity.Storage">
+		SELECT s.id, s.ware_house, s.stock_ware, s.stock_count, s.memo, p.id AS "product.id", p.name AS "product.name"
+		FROM storages s
+		LEFT OUTER JOIN products p
+		ON s.product_id = p.id
+		WHERE s.id = #{id}
+	</select>
+
+	<insert id="save">
+		INSERT INTO storages(id, ware_house, stock_ware, stock_count, memo, product_id)
+		VALUES(CRM_SEQ.nextval, #{wareHouse}, #{stockWare}, #{stockCount}, #{memo}, #{product.id})
+	</insert>
+
+	<delete id="delete">
+		DELETE FROM storages
+		WHERE id = #{id}
+	</delete>
+
+	<select id="getContent" resultType="com.atguigu.crm.entity.Storage">
+		SELECT *
+		FROM(
+			SELECT rownum rn, s.id, s.ware_house, s.stock_ware, s.stock_count, s.memo, p.name AS "product.name"
+			FROM storages s
+			LEFT OUTER JOIN products p
+			ON s.product_id = p.id
+			<include refid="queryCondition"/>
+		)
+		<![CDATA[
+			WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+	
+	<select id="getTotalElements" resultType="long">
+		SELECT count(s.id)
+		FROM storages s
+		LEFT OUTER JOIN products p
+		ON s.product_id = p.id
+		<include refid="queryCondition"/>
+	</select>
+
+	<sql id="queryCondition">
+		<where>
+			<if test="product_name != null">
+				p.name LIKE #{product_name}
+			</if>
+			<if test="wareHouse != null">
+				AND ware_house LIKE #{wareHouse}
+			</if>
+		</where>
+	</sql>
+
+</mapper>

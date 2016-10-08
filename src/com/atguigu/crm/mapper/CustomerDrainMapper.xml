@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.CustomerDrainMapper">
+
+	<delete id="delete">
+		DELETE FROM customer_drains
+		WHERE customer_id = #{customerId}
+	</delete>
+
+	<update id="confirmUpdate">
+		UPDATE customer_drains
+		SET reason = #{reason}, drain_date = #{drainDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delayUpdate">
+		UPDATE customer_drains
+		SET delay = #{delay}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="get" resultType="com.atguigu.crm.entity.CustomerDrain">
+		SELECT cd.id, cd.drain_date AS "drainDate", o.max_order AS "lastOrderDate", cd.delay,
+			cd.reason, cd.status, c.name AS "customer.name", con.name AS "customer.manager.name"
+		FROM customer_drains cd
+		LEFT OUTER JOIN customers c
+		ON cd.customer_id = c.id
+		LEFT OUTER JOIN contacts con
+		ON c.manager_id = con.id
+		LEFT OUTER JOIN (
+			SELECT customer_id, max(order_date) AS max_order
+			FROM orders
+			GROUP BY customer_id) o
+		ON o.customer_id = c.id
+		WHERE cd.id = #{id}
+	</select>
+
+	<insert id="save">
+		INSERT INTO customer_drains(id, status, customer_id, delay)
+		VALUES(CRM_SEQ.nextval, '流失预警', #{customer.id}, '')
+	</insert>
+
+	<select id="getContent" resultType="com.atguigu.crm.entity.CustomerDrain">
+		SELECT * 
+		FROM(
+			SELECT rownum rn, cd.id, cd.drain_date AS "drainDate", o.max_order AS "lastOrderDate", 
+				cd.reason, cd.status, c.name AS "customer.name", con.name AS "customer.manager.name"
+			FROM customer_drains cd
+			LEFT OUTER JOIN customers c
+			ON cd.customer_id = c.id
+			LEFT OUTER JOIN contacts con
+			ON c.manager_id = con.id
+			LEFT OUTER JOIN (
+				SELECT customer_id, max(order_date) AS max_order
+				FROM orders
+				GROUP BY customer_id) o
+			ON o.customer_id = c.id
+			<include refid="queryCondition"/>
+		)
+		<![CDATA[
+			WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+	
+	<select id="getTotalElements" resultType="long">
+		SELECT count(cd.id)
+		FROM customer_drains cd
+		LEFT OUTER JOIN customers c
+		ON cd.customer_id = c.id
+		LEFT OUTER JOIN contacts con
+		ON c.manager_id = con.id
+		<include refid="queryCondition"/>
+	</select>
+	
+	<sql id="queryCondition">
+		<where>
+			<if test="customer_name != null">
+				c.name LIKE #{customer_name}
+			</if>
+			<if test="customer_manager_name != null">
+				con.name LIKE #{customer_manager_name}
+			</if>
+		</where>
+	</sql>
+
+</mapper>

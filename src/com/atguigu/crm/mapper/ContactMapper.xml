@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.ContactMapper">
+
+	<update id="update">
+		UPDATE contacts
+		SET tel=#{tel}, sex=#{sex}, position=#{position}, mobile=#{mobile}, memo=#{memo}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="get" resultType="com.atguigu.crm.entity.Contact">
+		SELECT id, name, tel, customer_id AS "customer.id", sex, position, mobile, memo
+		FROM contacts
+		WHERE id = #{id}
+	</select>
+
+	<delete id="delete">
+		DELETE FROM contacts
+		WHERE id = #{id}
+	</delete>
+
+	<select id="checkConNum" resultType="long">
+		SELECT count(id)
+		FROM contacts
+		WHERE customer_id = (
+			SELECT customer_id
+			FROM contacts
+			WHERE id = #{id}
+			)
+	</select>
+
+	<insert id="saveNew" >
+		INSERT INTO contacts(id, name, tel, customer_id, sex, position, mobile, memo)
+		VALUES(CRM_SEQ.nextval, #{name}, #{tel}, #{customer.id}, #{sex}, #{position}, #{mobile}, #{memo})
+	</insert>
+	
+	<insert id="save" >
+		INSERT INTO contacts(id, name, tel, customer_id)
+		VALUES(CRM_SEQ.nextval, #{name}, #{tel}, #{customer.id})
+	</insert>
+
+	<select id="getContent" resultType="com.atguigu.crm.entity.Contact">
+		SELECT *
+		FROM(
+			SELECT rownum rn, con.id, con.name, con.sex, con.position, con.tel, con.mobile, con.memo
+			FROM contacts con
+			LEFT OUTER JOIN contacts cus
+			ON con.customer_id = cus.id
+			WHERE con.customer_id = #{customerId}
+		)
+		<![CDATA[
+			WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+	
+	<select id="getTotalElements" resultType="long">
+		SELECT count(con.id)
+		FROM contacts con
+		LEFT OUTER JOIN contacts cus
+		ON con.customer_id = cus.id
+		WHERE con.customer_id = #{customerId}
+	</select>
+</mapper>

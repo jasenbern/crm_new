@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.AuthorityMapper">
+
+	<resultMap type="com.atguigu.crm.entity.Authority" id="parentMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="display_name" property="displayName"/>
+		<result column="url" property="url"/>
+		
+		<collection property="subAuthorities" ofType="com.atguigu.crm.entity.Authority">
+			<id column="s_id" property="id"/>
+			<result column="s_name" property="name"/>
+			<result column="s_display_name" property="displayName"/>
+			<result column="s_url" property="url"/>
+			<result column="s_parent_authority_id" property="parentAuthority.id"/>
+		</collection>
+	</resultMap>
+
+	<select id="getAllParentAuthorities" resultMap="parentMap">
+		SELECT p.id, p.name, p.display_name, p.url, 
+			s.id AS "s_id", s.name AS "s_name", s.display_name AS "s_display_name", 
+			s.url AS "s_url", s.parent_authority_id AS "s_parent_authority_id"
+		FROM authorities p
+		LEFT OUTER JOIN authorities s
+		ON s.parent_authority_id = p.id
+		WHERE p.parent_authority_id IS NULL
+	</select>
+
+</mapper>

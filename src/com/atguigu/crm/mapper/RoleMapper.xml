@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.RoleMapper">
+
+	<select id="getList" resultType="com.atguigu.crm.entity.Role">
+		SELECT id, name
+		FROM roles
+	</select>
+
+	<insert id="addAuthorities">
+		INSERT INTO role_authority(role_id, authority_id)
+		<foreach collection="authorities" item="auth" separator=" UNION ">
+		SELECT #{id}, #{auth.id} FROM dual
+		</foreach>
+	</insert>
+
+	<delete id="clearAuthorities">
+		DELETE FROM role_authority
+		WHERE role_id = #{id}
+	</delete>
+
+	<resultMap type="com.atguigu.crm.entity.Role" id="role2AuthMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="enabled" property="enabled"/>
+		<result column="description" property="description"/>
+		
+		<collection property="authorities" ofType="com.atguigu.crm.entity.Authority">
+			<id column="a_id" property="id"/>
+		</collection>
+	</resultMap>
+
+	<select id="get" resultMap="role2AuthMap">
+		SELECT r.id, r.name, r.enabled, r.description, a.id AS "a_id"
+		FROM roles r
+		LEFT OUTER JOIN role_authority ra
+		ON r.id = ra.role_id
+		LEFT OUTER JOIN authorities a
+		ON a.id = ra.authority_id
+		WHERE r.id = #{id}
+	</select>
+
+	<delete id="delete">
+		DELETE FROM roles
+		WHERE id = #{id}
+	</delete>
+
+	<insert id="save">
+		INSERT INTO roles(id, name, enabled, description)
+		VALUES(CRM_SEQ.nextval, #{name}, #{enabled}, #{description})
+	</insert>
+
+	<select id="getContent" resultType="com.atguigu.crm.entity.Role">
+		SELECT *
+		FROM (
+			SELECT rownum rn, id, name, enabled, description
+			FROM roles
+		)
+		<![CDATA[
+		WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+
+	<select id="getTotalElements" resultType="long">
+		SELECT count(id)
+		FROM roles
+	</select>
+
+</mapper>
