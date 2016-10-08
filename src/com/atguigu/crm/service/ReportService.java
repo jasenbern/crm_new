@@ -46,8 +46,7 @@ public class ReportService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Map<String, Object>> getConsistPage(int pageNo,
-			String type) {
+	public Page<Map<String, Object>> getConsistPage(int pageNo, String type) {
 
 		Page<Map<String, Object>> page = new Page<>();
 		page.setPageNo(pageNo);
@@ -62,9 +61,10 @@ public class ReportService {
 		params.put("firstIndex", firstIndex);
 		params.put("endIndex", endIndex);
 
-		List<Map<String, Object>> content = reportMapper.getConsistContent(params);
+		List<Map<String, Object>> content = reportMapper
+				.getConsistContent(params);
 		page.setContent(content);
-		
+
 		return page;
 	}
 
@@ -92,6 +92,7 @@ public class ReportService {
 
 		return page;
 	}
+
 	@Transactional(readOnly = true)
 	public Page<Map<String, Object>> getDrainPage(int pageNo,
 			Map<String, Object> params) throws ParseException {
@@ -101,8 +102,7 @@ public class ReportService {
 		Map<String, Object> mybatisParams = CRMUtils
 				.parseParmas2MybatisParams(params);
 
-		long totalElements = reportMapper
-				.getDrainTotalElements(mybatisParams);
+		long totalElements = reportMapper.getDrainTotalElements(mybatisParams);
 		page.setTotalElements(totalElements);
 
 		int firstIndex = page.getPageSize() * (page.getPageNo() - 1) + 1;

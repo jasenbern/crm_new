@@ -4,14 +4,66 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.crm.mapper.ReportMapper">
 
-	<select id="getConsistContent" resultType="java.util.Map">
+	<resultMap type="java.util.Map" id="drainMap">
+	
+		<result column="RN" property="RN"/>
+		
+		<association property="drain" javaType="com.atguigu.crm.entity.CustomerDrain">
+			<result column="date" property="drainDate"/>
+			<result column="reason" property="reason"/>
+			<result column="customerName" property="customer.name"/>
+			<result column="managerName" property="customer.manager.name"/>
+		</association>
+	</resultMap>
+
+	<select id="getDrainContent" resultMap="drainMap">
+		SELECT * 
+		FROM(
+			SELECT rownum rn, cd.drain_date AS "date", cd.reason AS "reason", c.name AS "customerName", con.name AS "managerName"
+			FROM customer_drains cd
+			LEFT OUTER JOIN customers c
+			ON cd.customer_id = c.id
+			LEFT OUTER JOIN contacts con
+			ON c.manager_id = con.id
+			<include refid="drainCondition"/>
+		)
+		<![CDATA[
+		WHERE rn >= #{firstIndex} AND rn < #{endIndex}
+		]]>
+	</select>
+	
+	<select id="getDrainTotalElements" resultType="long">
+		SELECT count(*)
+		FROM customer_drains cd
+		LEFT OUTER JOIN customers c
+		ON cd.customer_id = c.id
+		LEFT OUTER JOIN contacts con
+		ON c.manager_id = con.id
+		<include refid="drainCondition"/>
+	</select>
+	
+	<sql id="drainCondition">
+		<where>
+			<if test="customer_name != null">
+				AND c.name LIKE #{customer_name}
+			</if>
+			<if test="customer_manager_name != null">
+				AND con.name LIKE #{customer_manager_name}
+			</if>
+		</where>
+	</sql>
+
+	<select id="getServiceContent" resultType="java.util.Map">
 		SELECT *
 		FROM(
 			SELECT t.*, rownum rn
 			FROM(
-				SELECT customer_level AS "level", count(*) AS "num"
-				FROM customers
-				WHERE ${type} IS NOT NULL
+				SELECT c.customer_level AS "level", count(*) AS "num"
+				FROM customers c
+				INNER JOIN orders o
+				ON o.customer_id = c.id
+				WHERE customer_level IS NOT NULL
+				<include refid="serviceCondition" />
 				GROUP BY customer_level
 				ORDER BY customer_level
 			) t
@@ -21,47 +73,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		]]>
 	</select>
 
-	<select id="getConsistTotalElements" resultType="long">
+	<select id="getServiceTotalElements" resultType="long">
 		SELECT count(count(*))
-		FROM customers
+		FROM customers c
+		INNER JOIN orders o
+		ON o.customer_id = c.id
 		WHERE customer_level IS NOT NULL
+		<include refid="serviceCondition" />
 		GROUP BY customer_level
 	</select>
-	
+
 	<sql id="serviceCondition">
-		<where>
-			<if test="minOrderDate != null">
-				o.order_date >= #{minOrderDate}
-			</if>
-			<if test="maxOrderDate != null">
-				<![CDATA[
-				AND o.order_date <= #{maxOrderDate}
-				]]>
-			</if>
-		</where>
+		<if test="minOrderDate != null">
+			AND o.order_date >= #{minOrderDate}
+		</if>
+		<if test="maxOrderDate != null">
+			<![CDATA[
+			AND o.order_date <= #{maxOrderDate}
+			]]>
+		</if>
 	</sql>
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	<select id="getConsistContent" resultType="java.util.Map">
 		SELECT *
 		FROM(
@@ -80,7 +112,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 
 	<select id="getConsistTotalElements" resultType="long">
-		SELECT count(count(*))
+		SELECT
+		count(count(*))
 		FROM customers
 		WHERE ${type} IS NOT NULL
 		GROUP BY ${type}
@@ -112,8 +145,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		SELECT count(DISTINCT c.id)
 		FROM customers c
 		INNER JOIN orders o
-		ON
-		o.customer_id = c.id
+		ON o.customer_id = c.id
 		<include refid="contributeCondition" />
 	</select>
 

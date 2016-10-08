@@ -26,27 +26,28 @@ public class ReportHandler {
 	public String getCustomerDrain(
 			@RequestParam(value = "pageNo", required = false) String pageNoStr,
 			Map<String, Object> map, HttpServletRequest request)
-					throws ParseException {
-		
+			throws ParseException {
+
 		int pageNo = 1;
 		try {
 			pageNo = Integer.parseInt(pageNoStr);
 		} catch (Exception e) {
 		}
-		
+
 		String prefix = "search_";
 		Map<String, Object> params = WebUtils.getParametersStartingWith(
 				request, prefix);
-		
+
 		Page<Map<String, Object>> page = reportService.getDrainPage(pageNo,
 				params);
 		map.put("page", page);
-		
+
 		String queryString = CRMUtils.parseParams2QueryString(params);
 		map.put("queryString", queryString);
-		
-		return "report/service";
+
+		return "report/drain";
 	}
+
 	@RequestMapping("/service")
 	public String getCustomerService(
 			@RequestParam(value = "pageNo", required = false) String pageNoStr,

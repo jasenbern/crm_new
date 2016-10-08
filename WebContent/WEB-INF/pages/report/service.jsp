@@ -42,8 +42,8 @@
 					<c:forEach items="${page.content }" var="item">
 						<tr>
 							<td class="list_data_number">${item.RN }</td>
-							<td class="list_data_ltext">大客户</td>
-							<td class="list_data_number">2</td>
+							<td class="list_data_ltext">${item.level }</td>
+							<td class="list_data_number">${item.num }</td>
 						</tr>			
 					</c:forEach>
 				</table>

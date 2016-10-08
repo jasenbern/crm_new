@@ -14,7 +14,7 @@
 		<button class="common_button" onclick="document.forms[0].submit();">查询</button>  
 	</div>
 	
-  	<form action="${ctx }/report/drain">
+  	<form action="${ctp }/report/drain">
 		<table class="query_form_table" border="0" cellPadding="3" cellSpacing="0">
 			<tr>
 				<th>
@@ -46,13 +46,13 @@
 				<th>客户经理</th>
 				<th>流失原因</th>
 			</tr>
-				<c:forEach var="drain" items="${page.content }" varStatus="status">
+				<c:forEach items="${page.content }" var="item">
 					<tr>
-						<td class="list_data_number">${status.count}</td>				
-						<td class="list_data_text"><fmt:formatDate value="${drain.drainDate }" pattern="yyyy-MM-dd"/></td>
-						<td class="list_data_text">${drain.customer.name}</td>				
-						<td class="list_data_text">${drain.customer.manager.name}</td>
-						<td class="list_data_ltext">${drain.reason}</td>				
+						<td class="list_data_number">${item.RN }</td>				
+						<td class="list_data_text"><fmt:formatDate value="${item.drain.drainDate }" pattern="yyyy-MM-dd"/></td>
+						<td class="list_data_text">${item.drain.customer.name }</td>				
+						<td class="list_data_text">${item.drain.customer.manager.name }</td>
+						<td class="list_data_ltext">${item.drain.reason }</td>				
 					</tr>			
 				</c:forEach>
 			</table>

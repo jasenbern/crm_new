@@ -1,5 +1,6 @@
 package com.atguigu.crm.orm;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.quartz.JobExecutionContext;
@@ -11,7 +12,8 @@ public class MyQuartzJobBean extends QuartzJobBean{
 	@Override
 	protected void executeInternal(JobExecutionContext context)
 			throws JobExecutionException {
-		System.out.println(new Date());
+		
+		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 	}
 
 }

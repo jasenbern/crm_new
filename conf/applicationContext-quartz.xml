@@ -20,7 +20,7 @@
 	<!-- 日志：配置石英任务触发器 -->
 	<bean id="cronTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="jobDetailBean" />
-		<property name="cronExpression" value="* * * * * ?" />
+		<property name="cronExpression" value="*/10 * * * * ?" />
 	</bean>
 
 	<!-- 日志：配置石英任务工厂bean -->
