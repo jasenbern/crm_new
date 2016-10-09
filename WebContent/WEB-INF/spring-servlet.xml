@@ -30,7 +30,10 @@
 	<mvc:view-controller path="/unauthorized" view-name="home/unauthorized"/>
 	
 	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-		<property name="basename" value="i18n"></property>
+		<property name="basename" value="i18n"/>
 	</bean>
 	
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="100"/>
+	</bean>
 </beans>

@@ -94,6 +94,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</if>
 	</sql>
 
+	<select id="getConsistMap" resultType="java.util.Map">
+		SELECT ${type} AS "type", count(*) AS "num"
+		FROM customers
+		WHERE ${type} IS NOT NULL
+		GROUP BY ${type}
+	</select>
+
 	<select id="getConsistContent" resultType="java.util.Map">
 		SELECT *
 		FROM(

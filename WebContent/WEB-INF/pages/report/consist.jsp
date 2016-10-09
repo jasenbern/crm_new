@@ -55,6 +55,7 @@
 					</th>
 					<td>
 						&nbsp;
+						
 					</td>
 				</tr>
 			</table>
@@ -87,6 +88,7 @@
 					</c:forEach>
 				</table>
 				<atguigu:pages page="${page }"></atguigu:pages>
+				<img alt="" src="${ctp }/report/consist/picture?type=${type }">
 			</c:if>
 		</div>
 	</form>

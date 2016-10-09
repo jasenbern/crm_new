@@ -19,8 +19,7 @@
 	
 	<form action="${ctp}/report/contribute">
 		<div id="listView" style="display:block;">
-			<table class="query_form_table" border="0" cellPadding="3"
-				cellSpacing="0">
+			<table class="query_form_table" border="0" cellPadding="3" cellSpacing="0">
 				<tr>
 					<th>
 						客户名称

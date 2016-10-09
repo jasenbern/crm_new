@@ -1,5 +1,6 @@
 package com.atguigu.crm.service;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
@@ -115,5 +116,18 @@ public class ReportService {
 		page.setContent(content);
 
 		return page;
+	}
+
+	@Transactional(readOnly = true)
+	public Map<String, Integer> getConsistNumMap(String type) {
+
+		List<Map<String, Object>> list = reportMapper.getConsistMap(type);
+
+		Map<String, Integer> consistNumMap = new HashMap<>();
+		for (Map<String, Object> map : list) {
+			consistNumMap.put((String) map.get("type"), ((BigDecimal) map.get("num")).intValue());
+		}
+
+		return consistNumMap;
 	}
 }

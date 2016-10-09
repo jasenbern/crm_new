@@ -4,8 +4,6 @@ import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 
-import javax.servlet.ServletOutputStream;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;

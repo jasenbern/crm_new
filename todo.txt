@@ -1,5 +1,5 @@
-report -> service
-report -> drain
-JFreeChart -> 用到统计，生成统计图表		GET
-POI -> 用到统计，生成统计excel文件		GET
+report -> service					FINISHED
+report -> drain						FINISHED
+JFreeChart -> 用到统计，生成统计图表		GET		consist		进入页面生成统计图表√
+POI -> 用到统计，生成统计excel文件		GET		service		导出详细信息
 quartz -> 石英控制					GET

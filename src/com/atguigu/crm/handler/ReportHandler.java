@@ -2,6 +2,7 @@ package com.atguigu.crm.handler;
 
 import java.text.ParseException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -74,10 +75,26 @@ public class ReportHandler {
 		return "report/service";
 	}
 
+	@RequestMapping("/consist/picture")
+	public String consistPicture(Map<String, Object> map,
+			@RequestParam("type") String type) {
+
+		Map<String, Integer> consistNumMap = reportService
+				.getConsistNumMap(type);
+
+		for (Entry<String, Integer> entry : consistNumMap.entrySet()) {
+			map.put(entry.getKey(), entry.getValue());
+		}
+		
+		return "myJFreeChartView";
+	}
+
 	@RequestMapping("/consist")
 	public String getCustomerConsist(Map<String, Object> map,
 			@RequestParam(value = "pageNo", required = false) String pageNoStr,
-			@RequestParam(value = "type", required = false) String type) {
+			@RequestParam(value = "type", required = false) String type,
+			HttpServletRequest request) {
+		
 
 		if (type == null) {
 			type = "customer_level";
@@ -93,6 +110,8 @@ public class ReportHandler {
 				type);
 		map.put("page", page);
 		map.put("queryString", "&type=" + type);
+		
+		request.setAttribute("type", type);
 
 		return "report/consist";
 	}
