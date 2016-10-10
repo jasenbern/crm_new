@@ -25,4 +25,6 @@ public interface ReportMapper {
 
 	List<Map<String, Object>> getDrainContent(Map<String, Object> params);
 
+	List<Map<String, Object>> getServiceExcelList(Map<String, Object> params);
+
 }

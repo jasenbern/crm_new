@@ -53,6 +53,82 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</where>
 	</sql>
 
+	<select id="getServiceExcelList" resultType="java.util.Map">
+	<!--  	所有用户信息放到一张表里，最上面写查询日期
+			需要的列有：
+			客户等级
+			客户名称
+			客户经理
+			客户联系方式（电话，网址）
+			客户地区
+			客户信用度
+			客户满意度
+			已付款总金额
+			未付款总金额
+			（总金额需要查order_items表计算）AND o_in.customer_id = c.id-->
+		SELECT c.customer_level AS　"LEVEL", c.name, c.tel, c.websit, c.region, c.satify, c.credit, m.name AS "MNAME",
+			
+			(SELECT sum(p.price*oi.item_count)
+	        FROM (
+	        	SELECT *
+		    	FROM orders
+		    	<include refid="excelCondition"/> 
+	        	) o_in
+	        LEFT OUTER JOIN order_items oi
+	        ON o_in.id = oi.order_id
+	        LEFT OUTER JOIN products p
+	        ON p.id = oi.product_id
+	        LEFT OUTER JOIN customers c_in
+	        ON c_in.id = o_in.customer_id
+	        WHERE o_in.status = '已付款'
+	        AND c_in.id = c.id) AS "payed",
+	        
+	        (SELECT sum(p.price*oi.item_count)
+	        FROM (
+	        	SELECT *
+		    	FROM orders
+		    	<include refid="excelCondition"/> 
+	        	) o_in
+	        LEFT OUTER JOIN order_items oi
+	        ON o_in.id = oi.order_id
+	        LEFT OUTER JOIN products p
+	        ON p.id = oi.product_id
+	        LEFT OUTER JOIN customers c_in
+	        ON c_in.id = o_in.customer_id
+	        WHERE o_in.status = '未付款'
+	        AND c_in.id = c.id) AS "unpayed"
+	        
+	    FROM customers c
+	    LEFT OUTER JOIN contacts m
+	    ON c.manager_id = m.id
+	    INNER JOIN (
+	    	SELECT *
+	    	FROM orders
+	    	<include refid="excelCondition"/> 
+	    	) o
+	    ON o.customer_id = c.id
+	    LEFT OUTER JOIN order_items oi
+	    ON o.id = oi.order_id
+	    LEFT OUTER JOIN products p
+	    ON p.id = oi.product_id
+	    WHERE customer_level IS NOT NULL
+	    GROUP BY c.id, c.customer_level, c.name, c.tel, c.websit, c.region, c.satify, c.credit, m.name
+	    ORDER BY c.customer_level
+	</select>
+	
+	<sql id="excelCondition">
+		<where>
+			<if test="minOrderDate != null">
+				order_date >= #{minOrderDate}
+			</if>
+			<if test="maxOrderDate != null">
+				<![CDATA[
+				AND order_date <= #{maxOrderDate}
+				]]>
+			</if>
+		</where>
+	</sql>
+
 	<select id="getServiceContent" resultType="java.util.Map">
 		SELECT *
 		FROM(
@@ -60,12 +136,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			FROM(
 				SELECT c.customer_level AS "level", count(*) AS "num"
 				FROM customers c
-				INNER JOIN orders o
+				INNER JOIN (
+			    	SELECT *
+			    	FROM orders
+			    	<include refid="serviceCondition"/> 
+			    	) o
 				ON o.customer_id = c.id
 				WHERE customer_level IS NOT NULL
-				<include refid="serviceCondition" />
-				GROUP BY customer_level
-				ORDER BY customer_level
+				GROUP BY c.customer_level
+				ORDER BY c.customer_level
 			) t
 		)
 		<![CDATA[
@@ -76,22 +155,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<select id="getServiceTotalElements" resultType="long">
 		SELECT count(count(*))
 		FROM customers c
-		INNER JOIN orders o
+		INNER JOIN (
+	    	SELECT *
+	    	FROM orders
+	    	<include refid="serviceCondition"/> 
+	    	) o
 		ON o.customer_id = c.id
 		WHERE customer_level IS NOT NULL
-		<include refid="serviceCondition" />
-		GROUP BY customer_level
+		GROUP BY c.customer_level
 	</select>
 
 	<sql id="serviceCondition">
-		<if test="minOrderDate != null">
-			AND o.order_date >= #{minOrderDate}
-		</if>
-		<if test="maxOrderDate != null">
-			<![CDATA[
-			AND o.order_date <= #{maxOrderDate}
-			]]>
-		</if>
+		<where>
+			<if test="minOrderDate != null">
+				order_date >= #{minOrderDate}
+			</if>
+			<if test="maxOrderDate != null">
+				<![CDATA[
+				AND order_date <= #{maxOrderDate}
+				]]>
+			</if>
+		</where>
 	</sql>
 
 	<select id="getConsistMap" resultType="java.util.Map">

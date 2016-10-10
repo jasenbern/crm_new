@@ -1,6 +1,7 @@
 package com.atguigu.crm.handler;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -49,6 +50,20 @@ public class ReportHandler {
 		return "report/drain";
 	}
 
+	@RequestMapping("/service/excel")
+	public String serviceExcel(HttpServletRequest request) throws ParseException{
+		
+		String prefix = "search_";
+		Map<String, Object> params = WebUtils.getParametersStartingWith(
+				request, prefix);
+
+		List<Map<String, Object>> excelList = reportService.getServiceExcelList(params);
+		
+		request.setAttribute("excelList", excelList);
+		
+		return "myExcelDownloadView";
+	}
+	
 	@RequestMapping("/service")
 	public String getCustomerService(
 			@RequestParam(value = "pageNo", required = false) String pageNoStr,

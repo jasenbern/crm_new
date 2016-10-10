@@ -70,8 +70,23 @@ public class ReportService {
 	}
 
 	@Transactional(readOnly = true)
+	public Map<String, Integer> getConsistNumMap(String type) {
+
+		List<Map<String, Object>> list = reportMapper.getConsistMap(type);
+
+		Map<String, Integer> consistNumMap = new HashMap<>();
+		for (Map<String, Object> map : list) {
+			consistNumMap.put((String) map.get("type"),
+					((BigDecimal) map.get("num")).intValue());
+		}
+
+		return consistNumMap;
+	}
+
+	@Transactional(readOnly = true)
 	public Page<Map<String, Object>> getServicePage(int pageNo,
 			Map<String, Object> params) throws ParseException {
+
 		Page<Map<String, Object>> page = new Page<>();
 		page.setPageNo(pageNo);
 
@@ -95,8 +110,22 @@ public class ReportService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<Map<String, Object>> getServiceExcelList(
+			Map<String, Object> params) throws ParseException {
+
+		Map<String, Object> mybatisParams = CRMUtils
+				.parseParmas2MybatisParams(params);
+
+		List<Map<String, Object>> serviceExcelList = reportMapper
+				.getServiceExcelList(mybatisParams);
+
+		return serviceExcelList;
+	}
+
+	@Transactional(readOnly = true)
 	public Page<Map<String, Object>> getDrainPage(int pageNo,
 			Map<String, Object> params) throws ParseException {
+
 		Page<Map<String, Object>> page = new Page<>();
 		page.setPageNo(pageNo);
 
@@ -118,16 +147,4 @@ public class ReportService {
 		return page;
 	}
 
-	@Transactional(readOnly = true)
-	public Map<String, Integer> getConsistNumMap(String type) {
-
-		List<Map<String, Object>> list = reportMapper.getConsistMap(type);
-
-		Map<String, Integer> consistNumMap = new HashMap<>();
-		for (Map<String, Object> map : list) {
-			consistNumMap.put((String) map.get("type"), ((BigDecimal) map.get("num")).intValue());
-		}
-
-		return consistNumMap;
-	}
 }

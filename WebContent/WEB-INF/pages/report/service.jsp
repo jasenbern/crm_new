@@ -8,6 +8,7 @@
 <body>
 	<div class="page_title">客户服务分析</div>
 	<div class="button_bar">
+	<button class="common_button" onclick="window.location.href='${ctp}/report/service/excel?service=excel${queryString}'">下载详细信息</button>  
 	<button class="common_button" onclick="document.forms[0].submit();">查询</button>  
 	</div>
 	<form action="${ctp}/report/service">
@@ -18,9 +19,9 @@
 						日期
 					</th>
 					<td>
-					<input type="text" name="search_D_minCreateDate" size="10" />
+					<input type="text" name="search_D_minOrderDate" size="10" />
 					-
-					<input type="text" name="search_D_maxCreateDate" size="10" />
+					<input type="text" name="search_D_maxOrderDate" size="10" />
 					</td>
 					<th>&nbsp;</th>
 					<td>&nbsp;</td>
